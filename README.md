@@ -89,7 +89,7 @@ A robust RESTful API for managing tasks built with Spring Boot. This API provide
 
 2. **Access Swagger Documentation**
    ```
-   http://localhost:8080/swagger-ui.html
+   http://localhost:8080/swagger-ui/index.html
    ```
 
 ## 🛠️ API Endpoints
@@ -112,14 +112,14 @@ src
 ├── main
 │   ├── java
 │   │   └── com.example.taskmanagement
-│   │       ├── Config         # Security Configuration
+│   │       ├── Config         # Configuration
 │   │       ├── controller     # REST Controllers
 │   │       ├── model          # JPA Entities
 │   │       ├── DTO            # DTO classes
 │   │       ├── repository     # DAO Layer
 │   │       ├── service        # Business Logic
-│   │       ├── Util          # JWT Utilities
-│   │       ├── filter        # JWT Request filter
+│   │       ├── Util           # JWT Utilities
+│   │       ├── filter         # JWT Request filter
 │   │       └── TaskManagementApplication.java
 │   └── resources
 │       └── application.yml    # Configuration
