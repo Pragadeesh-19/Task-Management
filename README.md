@@ -122,7 +122,7 @@ src
 │   │       ├── filter         # JWT Request filter
 │   │       └── TaskManagementApplication.java
 │   └── resources
-│       └── application.yml    # Configuration
+│       └── application.properties    # Configuration
 ├── test
 │   └── java
 │       └── com.example.taskmanagement
