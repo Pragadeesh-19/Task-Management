@@ -1,6 +1,8 @@
 package org.pragadeesh.taskmanagement.service;
 
 import lombok.RequiredArgsConstructor;
+
+import org.pragadeesh.taskmanagement.Exception.UserAlreadyExistsException;
 import org.pragadeesh.taskmanagement.dto.UserLoginDto;
 import org.pragadeesh.taskmanagement.dto.UserSignupDto;
 import org.pragadeesh.taskmanagement.model.User;
@@ -27,12 +29,20 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
 
     public User register(UserSignupDto request) {
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.getRole());
 
-        return userRepository.save(user);
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new UserAlreadyExistsException("User already exists with username: " + request.getUsername());
+        }
+
+        try {
+            User user = new User();
+            user.setUsername(request.getUsername());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setRole(request.getRole());
+            return userRepository.save(user);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to register user" + e.getMessage());
+        }
     }
 
     public JwtResponse login(UserLoginDto request) {
@@ -61,6 +71,8 @@ public class AuthenticationService {
             return new JwtResponse(token, user);
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid username or password");
+        } catch (Exception e) {
+            throw new RuntimeException("Authentication failed" + e.getMessage());
         }
     }
 }

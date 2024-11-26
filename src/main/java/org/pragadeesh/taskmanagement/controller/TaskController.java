@@ -1,6 +1,7 @@
 package org.pragadeesh.taskmanagement.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,6 +10,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+
+import org.pragadeesh.taskmanagement.Exception.ErrorResponse;
 import org.pragadeesh.taskmanagement.model.Task;
 import org.pragadeesh.taskmanagement.service.TaskService;
 import org.springframework.http.ResponseEntity;
@@ -20,18 +23,24 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/tasks")
 @RequiredArgsConstructor
-@Tag(name = "tasks", description = "Task management API's")
+@Tag(name = "Task Management", description = "APIs for managing tasks including CRUD operations")
 @SecurityRequirement(name = "Bearer Authentication")
 public class TaskController {
 
     private final TaskService taskService;
 
     @Operation(
-            summary = "Get all tasks",
-            description = "Retrieve all tasks for the authenticated user"
+            summary = "Retrieve all tasks",
+            description = "Gets a list of all tasks for the authenticated user. Returns an empty list if no tasks exist."
     )
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved tasks",
-        content = @Content(array = @ArraySchema(schema = @Schema(implementation = Task.class))))
+    @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved all tasks",
+            content = @Content(
+                    array = @ArraySchema(schema = @Schema(implementation = Task.class)),
+                    mediaType = "application/json"
+            )
+    )
     @GetMapping
     public ResponseEntity<List<Task>> getAllTask() {
         return ResponseEntity.ok(taskService.getAllTask());
@@ -39,72 +48,122 @@ public class TaskController {
 
     @Operation(
             summary = "Get task by ID",
-            description = "Retrieve a specific task by its ID"
+            description = "Retrieves a specific task using its UUID. Returns 404 if task is not found."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Task found",
-                    content = @Content(schema = @Schema(implementation = Task.class))),
-            @ApiResponse(responseCode = "404", description = "Task not found")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Task found successfully",
+                    content = @Content(schema = @Schema(implementation = Task.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Task not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable UUID id) {
+    public ResponseEntity<Task> getTaskById(@Parameter(description = "UUID of the task", required = true) @PathVariable UUID id) {
         return ResponseEntity.ok(taskService.getTaskById(id));
     }
 
     @Operation(
-            summary = "Create new task",
-            description = "Create a new task with the provided details"
+            summary = "Create a new task",
+            description = "Creates a new task with the provided details. The task status is automatically set to PENDING."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Task created",
-                    content = @Content(schema = @Schema(implementation = Task.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Task created successfully",
+                    content = @Content(schema = @Schema(implementation = Task.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input data",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
     })
     @PostMapping
-    public ResponseEntity<Task> createTask(@RequestBody Task task) {
+    public ResponseEntity<Task> createTask(
+            @Parameter(description = "Task details", required = true)
+            @RequestBody Task task) {
         return ResponseEntity.ok(taskService.createTask(task));
     }
 
     @Operation(
-            summary = "Update task",
-            description = "Update an existing task by its ID"
+            summary = "Update an existing task",
+            description = "Updates a task with the provided details. All fields can be updated except the ID."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Task updated",
-                    content = @Content(schema = @Schema(implementation = Task.class))),
-            @ApiResponse(responseCode = "404", description = "Task not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Task updated successfully",
+                    content = @Content(schema = @Schema(implementation = Task.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Task not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input data",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable UUID id, @RequestBody Task updatedTask) {
+    public ResponseEntity<Task> updateTask(
+            @Parameter(description = "UUID of the task to update", required = true) @PathVariable UUID id,
+            @Parameter(description = "Updated task details", required = true) @RequestBody Task updatedTask) {
         return ResponseEntity.ok(taskService.updateTask(id, updatedTask));
     }
 
     @Operation(
-            summary = "Delete task",
-            description = "Delete a task by its ID"
+            summary = "Delete a task",
+            description = "Permanently deletes a task by its ID"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Task deleted"),
-            @ApiResponse(responseCode = "404", description = "Task not found")
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Task successfully deleted"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Task not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteTask(
+            @Parameter(description = "UUID of the task to delete", required = true) @PathVariable UUID id) {
         taskService.deleteTask(id);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(
             summary = "Mark task as completed",
-            description = "Update the status of a task to completed"
+            description = "Updates the status of a task to COMPLETED. Returns error if task is already completed."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Task marked as completed",
-                    content = @Content(schema = @Schema(implementation = Task.class))),
-            @ApiResponse(responseCode = "404", description = "Task not found")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Task marked as completed successfully",
+                    content = @Content(schema = @Schema(implementation = Task.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Task not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Task is already completed",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
     })
     @PatchMapping("/{id}/complete")
-    public ResponseEntity<Task> markTaskAsCompleted(@PathVariable UUID id) {
+    public ResponseEntity<Task> markTaskAsCompleted(
+            @Parameter(description = "UUID of the task to mark as completed", required = true) @PathVariable UUID id) {
         return ResponseEntity.ok(taskService.markTaskAsCompleted(id));
     }
 }

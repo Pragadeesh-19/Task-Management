@@ -1,6 +1,8 @@
 package org.pragadeesh.taskmanagement.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -19,11 +21,13 @@ public class Task {
     private UUID id;
 
     @Column(nullable = false, length = 255)
+    @NotNull(message = "title is required")
     private String title;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Future(message = "Due date should be in the future")
     private LocalDate dueDate;
 
     @Enumerated(EnumType.STRING)

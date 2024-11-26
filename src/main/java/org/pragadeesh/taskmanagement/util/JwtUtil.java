@@ -16,7 +16,7 @@ import java.util.function.Function;
 public class JwtUtil {
 
     @Value("${secret_key}")
-    private String SECRET_KEY;
+    private String SECRET_KEY ;
 
     public String generateToken(UserDetails userDetails) {
         return Jwts

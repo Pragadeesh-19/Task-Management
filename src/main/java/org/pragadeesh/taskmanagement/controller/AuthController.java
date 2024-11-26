@@ -1,21 +1,20 @@
 package org.pragadeesh.taskmanagement.controller;
 
-import io.jsonwebtoken.Jwt;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+
+import org.pragadeesh.taskmanagement.Exception.ErrorResponse;
 import org.pragadeesh.taskmanagement.dto.UserLoginDto;
 import org.pragadeesh.taskmanagement.dto.UserSignupDto;
 import org.pragadeesh.taskmanagement.service.AuthenticationService;
 import org.pragadeesh.taskmanagement.util.JwtResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,64 +23,69 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api/auth/")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "Authentication management API's")
+@Tag(name = "Authentication", description = "APIs for user authentication and registration")
 public class AuthController {
 
     private final AuthenticationService authenticationService;
 
     @Operation(
             summary = "Register new user",
-            description = "Register a new user with provided credentials"
+            description = "Register a new user with username, password, and role. Returns JWT token upon successful registration."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully registered",
-                content = @Content(schema = @Schema(implementation = JwtResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
-            @ApiResponse(responseCode = "409", description = "User already exist")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User registered successfully",
+                    content = @Content(schema = @Schema(implementation = JwtResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input data",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Username already exists",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
     })
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody UserSignupDto userSignupDto) {
+    public ResponseEntity<?> register(
+            @Parameter(description = "User registration details", required = true)
+            @RequestBody UserSignupDto userSignupDto) {
         return ResponseEntity.ok(authenticationService.register(userSignupDto));
     }
 
     @Operation(
-            summary = "Authenticate User",
-            description = "Login with username and password to receive JWT token"
+            summary = "Authenticate user",
+            description = "Authenticate user with username and password. Returns JWT token upon successful authentication."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully authenticated",
-                content = @Content(schema = @Schema(implementation = JwtResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Authentication successful",
+                    content = @Content(schema = @Schema(implementation = JwtResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input data",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid credentials",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
     })
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginDto userLoginDto) {
-        // return ResponseEntity.ok(authenticationService.login(userLoginDto));
-
-        if (userLoginDto ==  null) {
-            return ResponseEntity.badRequest().body("login request cannot be null");
-        }
-
-        if (userLoginDto.getUsername() == null || userLoginDto.getUsername().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Username cannot be empty");
-        }
-
-        if (userLoginDto.getPassword() == null || userLoginDto.getPassword().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Password cannot be empty");
-        }
-
-        try {
-            JwtResponse response = authenticationService.login(userLoginDto);
-            if (response == null || response.getToken() == null) {
-                return ResponseEntity.internalServerError().body("Error getting authentication token");
-            }
-            return ResponseEntity.ok(response);
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("An error occured during authentication");
-        }
+    public ResponseEntity<?> login(
+            @Parameter(description = "User login credentials", required = true)
+            @RequestBody UserLoginDto userLoginDto) {
+        return ResponseEntity.ok(authenticationService.login(userLoginDto));
     }
 }

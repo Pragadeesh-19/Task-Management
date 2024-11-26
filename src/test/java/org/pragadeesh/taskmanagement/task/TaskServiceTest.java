@@ -100,7 +100,7 @@ public class TaskServiceTest {
         assertEquals("Updated Description", result.getDescription());
         assertEquals(TaskStatus.IN_PROGRESS, result.getStatus());
 
-        verify(taskRepository, times(1)).save(task);
+        verify(taskRepository, times(1)).save(task); // called only once
     }
 
     @Test
