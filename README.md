@@ -89,7 +89,8 @@ A robust RESTful API for managing tasks built with Spring Boot. This API provide
 
 1. Entity-Relationship diagram:
   
-      ![ERDiagram](https://github.com/user-attachments/assets/30e218cf-834f-4a4c-90ad-3b2bdf415308)
+      ![image](https://github.com/user-attachments/assets/8fe0ce9d-55a2-4cc6-b29a-53bbe7e0845e)
+
 
 
 ## 🛠️ Installation
