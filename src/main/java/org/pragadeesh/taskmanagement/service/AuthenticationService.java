@@ -68,7 +68,7 @@ public class AuthenticationService {
                 throw new IllegalStateException("Generated token cannot be empty");
             }
 
-            return new JwtResponse(token, user);
+            return new JwtResponse(token);
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid username or password");
         } catch (Exception e) {

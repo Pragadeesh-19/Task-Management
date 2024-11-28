@@ -1,6 +1,5 @@
 package org.pragadeesh.taskmanagement.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import org.pragadeesh.taskmanagement.Exception.TaskNotFoundException;
@@ -8,6 +7,7 @@ import org.pragadeesh.taskmanagement.model.Task;
 import org.pragadeesh.taskmanagement.model.TaskStatus;
 import org.pragadeesh.taskmanagement.repository.TaskRepository;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 import java.util.UUID;

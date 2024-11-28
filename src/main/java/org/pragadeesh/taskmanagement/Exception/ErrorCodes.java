@@ -1,8 +1,10 @@
 package org.pragadeesh.taskmanagement.Exception;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @AllArgsConstructor
+@Getter
 public enum ErrorCodes {
     TASK_NOT_FOUND(404, "Task not found"),
     TASK_ALREADY_COMPLETED(400, "Task is already completed"),
@@ -15,13 +17,5 @@ public enum ErrorCodes {
 
     private final int status;
     private final String message;
-
-    public int getStatus() {
-        return status;
-    }
-
-    public String getMessage() {
-        return message;
-    }
 
 }
