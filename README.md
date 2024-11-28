@@ -12,20 +12,12 @@ A robust RESTful API for managing tasks built with Spring Boot. This API provide
 
 ### Technical Features
 - 🔐 JWT-based Authentication
+- 🏢 Department-based Task Organization
+- 👥 Multi-user Task Assignment
 - ✅ Comprehensive Input Validation
 - 📝 Detailed Error Handling
 - 🧪 Unit Test Coverage
 - 📚 Swagger API Documentation
-
-## 📑 Table of Contents
-
-- [Technologies Used](#-technologies-used)
-- [Prerequisites](#-prerequisites)
-- [Installation](#-installation)
-- [Running the Application](#-running-the-application)
-- [API Endpoints](#%EF%B8%8F-api-endpoints)
-- [Project Structure](#-project-structure)
-- [Contributing](#-contributing)
 
 ## 🔧 Technologies Used
 
@@ -33,6 +25,7 @@ A robust RESTful API for managing tasks built with Spring Boot. This API provide
 - **PostgreSQL** (Database)
 - **Spring Security** with JWT Authentication
 - **Spring Data JPA** for Database management
+- **Docker** for running MySQL
 - **JUnit 5** & **Mockito** for Unit Testing
 - **IntelliJ IDEA** as IDE
 - **Postman** for API Testing
@@ -40,7 +33,7 @@ A robust RESTful API for managing tasks built with Spring Boot. This API provide
 ## 📋 Prerequisites
 
 - **Java**: JDK 17 or higher
-- **PostgreSQL**: Version 12 or higher
+- **DOcker**: Latest version
 - **Maven**: For dependency management
 
 ## 💾 Data Model
@@ -53,10 +46,51 @@ A robust RESTful API for managing tasks built with Spring Boot. This API provide
   "description": "string",
   "dueDate": "yyyy-MM-dd",
   "status": "pending|in_progress|completed",
+  "department": {
+      "id": "uuid",
+      "name": "string",
+      "escription": "string"
+  },
+  "assignedUsers": [
+      {
+        "id": "UUID",
+        "username": "string",
+        "role": "ADMIN|USER"
+      }
+  ]
   "createdAt": "timestamp",
   "updatedAt": "timestamp"
 }
 ```
+
+###Department
+```json
+{
+  "id": "UUID",
+  "name": "string",
+  "description": "string",
+  "createdAt": "timestamp",
+  "updatedAt": "timestamp"
+}
+```
+
+
+### Entity Relationship Diagram
+
+#### Core Entities
+- **Task**: Represents a task with title, description, and status
+- **Department**: Organizational unit that owns tasks
+- **User**: System user who can be assigned to tasks
+
+#### Relationships
+- One Department can have many Tasks (1:*)
+- One Department can have many Users (1:*)
+- Many Tasks can be assigned to Many Users (*:*)
+
+1. Entity-Relationship diagram:
+  
+      ![ERDiagram](https://github.com/user-attachments/assets/30e218cf-834f-4a4c-90ad-3b2bdf415308)
+
 
 ## 🛠️ Installation
 
@@ -66,12 +100,17 @@ A robust RESTful API for managing tasks built with Spring Boot. This API provide
    cd task-management-api
    ```
 
-2. **Configure PostgreSQL**
+2.  **Start MySQL using Docker**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Configuration**
    ```properties
-   spring.datasource.url=${SPRING.DATASOURCE.URL}
-   spring.datasource.username=${SPRING.DATASOURCE.USERNAME}
+   spring.datasource.url=jdbc:mysql://localhost:3306/taskmanagement
+   spring.datasource.username=root
    spring.datasource.password=${SPRING.DATASOURCE.PASSWORD}
-   spring.datasource.driver-class-name=org.postgresql.Driver
+   spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
    ```
 
 3. **Install Dependencies**
@@ -94,16 +133,28 @@ A robust RESTful API for managing tasks built with Spring Boot. This API provide
 
 ## 🛠️ API Endpoints
 
-| HTTP Method | Endpoint                | Description              | Auth Required |
-|-------------|------------------------|--------------------------|---------------|
-| `POST`      | `api/auth/signup`      | Register new user        | ❌            |
-| `POST`      | `api/auth/login`       | Login and get JWT       | ❌            |
-| `GET`       | `/tasks`               | Get all tasks           | ✅            |
-| `GET`       | `/tasks/{id}`          | Get task by ID          | ✅            |
-| `POST`      | `/tasks`               | Create new task         | ✅            |
-| `PUT`       | `/tasks/{id}`          | Update existing task    | ✅            |
-| `DELETE`    | `/tasks/{id}`          | Delete task             | ✅            |
-| `PATCH`     | `/tasks/{id}/complete` | Mark task as complete   | ✅            |
+
+## 🛠️ API Endpoints
+
+| HTTP Method | Endpoint                          | Description               | Auth Required |
+|-------------|-----------------------------------|---------------------------|---------------|
+| `POST`      | `api/auth/signup`                 | Register new user         | ❌            |
+| `POST`      | `api/auth/login`                  | Login and get JWT         | ❌            |
+| `GET`       | `/tasks`                          | Get all tasks             | ✅            |
+| `GET`       | `/tasks/{id}`                     | Get task by ID            | ✅            |
+| `POST`      | `/tasks`                          | Create new task           | ✅            |
+| `PUT`       | `/tasks/{id}`                     | Update existing task      | ✅            |
+| `DELETE`    | `/tasks/{id}`                     | Delete task               | ✅            |
+| `PATCH`     | `/tasks/{id}/complete`            | Mark task as complete     | ✅            |
+| `POST`      | `/tasks/{id}/assign-users`        | Assign users to task      | ✅            |
+| `POST`      | `/tasks/{id}/assign-department`   | Assign department to task | ✅            |
+| `GET`       | `/api/departments`                | Get all departments       | ✅            |
+| `POST`      | `/api/departments`                | Create department         | ✅            |
+| `PUT`       | `/api/departments/{id}`           | Update department         | ✅            |
+| `DELETE`    | `/api/departments/{id}`           | Delete department         | ✅            |
+
+## 📁 Project Structure
+
 
 ## 📁 Project Structure
 
@@ -117,6 +168,7 @@ src
 │   │       ├── model          # JPA Entities
 │   │       ├── DTO            # DTO classes
 |   |       ├── Exception      # Exception classes
+|   |       ├── Mapper         # Entity-Dto mapping
 │   │       ├── repository     # DAO Layer
 │   │       ├── service        # Business Logic
 │   │       ├── Util           # JWT Utilities
@@ -130,12 +182,25 @@ src
 │           └── service        # Unit Tests
 ```
 
-## 🧪 Running Tests
 
-Execute the test suite using:
-```bash
-mvn test
-```
+## 🐳 Docker Support
+
+The application uses Docker for MySQL database:
+
+1. Start MySQL container:
+   ```bash
+   docker-compose up -d
+   ```
+
+2. Check container status:
+   ```bash
+   docker ps
+   ```
+
+3. Stop container:
+   ```bash
+   docker-compose down
+   ```
 
 ## 🤝 Contributing
 
