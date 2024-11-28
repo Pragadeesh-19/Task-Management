@@ -1,12 +1,15 @@
 package org.pragadeesh.taskmanagement.dto;
 
-import lombok.Data;
+import java.util.UUID;
+
 import org.pragadeesh.taskmanagement.model.Role;
 
-@Data
-public class UserSignupDto {
+import lombok.Data;
 
+@Data
+public class UserDto {
+    
+    private UUID id;
     private String username;
-    private String password;
-    private Role role = Role.USER;
+    private Role role;
 }

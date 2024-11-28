@@ -12,13 +12,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 import org.pragadeesh.taskmanagement.Exception.ErrorResponse;
+import org.pragadeesh.taskmanagement.dto.TaskCreateDto;
+import org.pragadeesh.taskmanagement.dto.TaskResponseDto;
+import org.pragadeesh.taskmanagement.mapper.TaskMapper;
 import org.pragadeesh.taskmanagement.model.Task;
 import org.pragadeesh.taskmanagement.service.TaskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/tasks")
@@ -28,6 +33,7 @@ import java.util.UUID;
 public class TaskController {
 
     private final TaskService taskService;
+    private final TaskMapper taskMapper;
 
     @Operation(
             summary = "Retrieve all tasks",
@@ -42,8 +48,12 @@ public class TaskController {
             )
     )
     @GetMapping
-    public ResponseEntity<List<Task>> getAllTask() {
-        return ResponseEntity.ok(taskService.getAllTask());
+    public ResponseEntity<List<TaskResponseDto>> getAllTask() {
+        List<TaskResponseDto> tasks = taskService.getAllTask()
+                .stream()
+                .map(taskMapper::toDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(tasks);
     }
 
     @Operation(
@@ -63,8 +73,9 @@ public class TaskController {
             )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@Parameter(description = "UUID of the task", required = true) @PathVariable UUID id) {
-        return ResponseEntity.ok(taskService.getTaskById(id));
+    public ResponseEntity<TaskResponseDto> getTaskById(@Parameter(description = "UUID of the task", required = true) @PathVariable UUID id) {
+        Task task = taskService.getTaskById(id);
+        return ResponseEntity.ok(taskMapper.toDto(task));
     }
 
     @Operation(
@@ -84,10 +95,9 @@ public class TaskController {
             )
     })
     @PostMapping
-    public ResponseEntity<Task> createTask(
-            @Parameter(description = "Task details", required = true)
-            @RequestBody Task task) {
-        return ResponseEntity.ok(taskService.createTask(task));
+    public ResponseEntity<TaskResponseDto> createTask(@RequestBody TaskCreateDto taskCreateDto) {
+        Task task = taskService.createTask(taskCreateDto);
+        return ResponseEntity.ok(taskMapper.toDto(task));
     }
 
     @Operation(
@@ -112,10 +122,13 @@ public class TaskController {
             )
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(
-            @Parameter(description = "UUID of the task to update", required = true) @PathVariable UUID id,
-            @Parameter(description = "Updated task details", required = true) @RequestBody Task updatedTask) {
-        return ResponseEntity.ok(taskService.updateTask(id, updatedTask));
+    public ResponseEntity<TaskResponseDto> updateTask(
+            @Parameter(description = "UUID of the task to update", required = true)
+            @PathVariable UUID id,
+            @Parameter(description = "Updated task details", required = true)
+            @RequestBody TaskCreateDto taskCreateDto) {
+        Task updatedTask = taskService.updateTask(id, taskCreateDto);
+        return ResponseEntity.ok(taskMapper.toDto(updatedTask));
     }
 
     @Operation(
@@ -162,8 +175,37 @@ public class TaskController {
             )
     })
     @PatchMapping("/{id}/complete")
-    public ResponseEntity<Task> markTaskAsCompleted(
+    public ResponseEntity<TaskResponseDto> markTaskAsCompleted(
             @Parameter(description = "UUID of the task to mark as completed", required = true) @PathVariable UUID id) {
-        return ResponseEntity.ok(taskService.markTaskAsCompleted(id));
+        Task completedTask = taskService.markTaskAsCompleted(id);
+        return ResponseEntity.ok(taskMapper.toDto(completedTask));
     }
+
+    @Operation(summary = "Assign users to task")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Users assigned successfully"),
+            @ApiResponse(responseCode = "404", description = "Task or users not found")
+    })
+    @PostMapping("/{taskId}/assign-users")
+    public ResponseEntity<TaskResponseDto> assignUsersToTask(
+            @PathVariable UUID taskId,
+            @RequestBody List<UUID> userIds) {
+        Task updatedTask = taskService.assignUsersToTask(taskId, new HashSet<>(userIds));
+        return ResponseEntity.ok(taskMapper.toDto(updatedTask));
+    }
+
+    @Operation(summary = "Assign department to task")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Department assigned successfully"),
+            @ApiResponse(responseCode = "404", description = "Task or department not found")
+    })
+    @PostMapping("/{taskId}/assign-department")
+    public ResponseEntity<TaskResponseDto> assignDepartmentToTask(
+            @PathVariable UUID taskId,
+            @RequestBody UUID departmentId) {
+        Task updatedTask = taskService.assignDepartmentToTask(taskId, departmentId);
+        return ResponseEntity.ok(taskMapper.toDto(updatedTask));
+    }
+
+    
 }

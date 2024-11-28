@@ -122,5 +122,46 @@ public class GlobalExeptionHandler {
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(DepartmentNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleDepartmentNotFoundException(
+            DepartmentNotFoundException ex, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                ErrorCodes.DEPARTMENT_NOT_FOUND.getStatus(),
+                ex.getMessage(),
+                LocalDateTime.now(),
+                request.getRequestURI(),
+                ErrorCodes.DEPARTMENT_NOT_FOUND.name()
+        );
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+            IllegalArgumentException ex, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+            ErrorCodes.INVALID_ASSIGNMENT.getStatus(),
+            ex.getMessage(),
+            LocalDateTime.now(),
+            request.getRequestURI(),
+            ErrorCodes.INVALID_ASSIGNMENT.name()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(
+            RuntimeException ex, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                500,
+                ex.getMessage(),
+                LocalDateTime.now(),
+                request.getRequestURI(),
+                "INTERNAL_SERVER_ERROR"
+        );
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    
     
 }

@@ -13,7 +13,14 @@ public enum ErrorCodes {
     ACCESS_DENIED(403, "Access denied"),
     VALIDATION_ERROR(400, "Validation error"),
     INVALID_TOKEN(401, "Invalid or expired token"),
-    INTERNAL_SERVER_ERROR(500, "Internal server error");
+    INTERNAL_SERVER_ERROR(500, "Internal server error"),
+
+    DEPARTMENT_NOT_FOUND(404, "Department not found"), 
+    DEPARTMENT_ALREADY_EXISTS(409, "Department already exists"),
+    INVALID_ASSIGNMENT(400, "Invalid assignment request"),
+    USER_NOT_FOUND(404, "User not found"),
+    INVALID_USER_ASSIGNMENT(400, "Invalid user assignment");
+
 
     private final int status;
     private final String message;

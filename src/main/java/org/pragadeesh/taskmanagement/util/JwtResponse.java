@@ -1,7 +1,6 @@
 package org.pragadeesh.taskmanagement.util;
 
 import lombok.Getter;
-import org.pragadeesh.taskmanagement.model.User;
 
 import java.util.Objects;
 
