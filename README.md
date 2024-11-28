@@ -116,6 +116,7 @@ src
 │   │       ├── controller     # REST Controllers
 │   │       ├── model          # JPA Entities
 │   │       ├── DTO            # DTO classes
+|   |       ├── Exception      # Exception classes
 │   │       ├── repository     # DAO Layer
 │   │       ├── service        # Business Logic
 │   │       ├── Util           # JWT Utilities
